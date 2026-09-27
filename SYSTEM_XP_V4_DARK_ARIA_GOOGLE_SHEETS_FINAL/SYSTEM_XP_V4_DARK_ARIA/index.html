@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#050810" />
+  <meta name="description" content="SYSTEM XP — sistema personal de progreso RPG" />
+  <link rel="manifest" href="manifest.json" />
+  <title>SYSTEM XP — V4</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ['Rajdhani', 'Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'Consolas', 'monospace'],
+            sans: ['Inter', 'system-ui', 'sans-serif']
+          },
+          colors: {
+            system: {
+              bg: '#050810', card: '#0b1120', line: '#17243a', cyan: '#5ee7ff',
+              blue: '#5b8cff', purple: '#a77bff', gold: '#ffd76a', green: '#39e6a5',
+              red: '#ff5d7a', pink: '#ff67c7'
+            }
+          },
+          boxShadow: {
+            glow: '0 0 30px rgba(94,231,255,.18)',
+            glowStrong: '0 0 45px rgba(94,231,255,.32)',
+            gold: '0 0 30px rgba(255,215,106,.18)'
+          }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <style>
+    :root{--bg:#050810;--card:#0b1120;--line:#17243a;--cyan:#5ee7ff;--blue:#5b8cff;--purple:#a77bff;--gold:#ffd76a;--green:#39e6a5;--red:#ff5d7a;--pink:#ff67c7}
+    *{box-sizing:border-box}
+    html,body{margin:0;min-height:100%;background:var(--bg);color:#eef5ff;font-family:Inter,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+    body{overflow-x:hidden;background-image:radial-gradient(circle at 50% -10%,rgba(91,140,255,.14),transparent 30%),linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:auto,34px 34px,34px 34px}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 0%,rgba(94,231,255,.018) 50%,transparent 100%);mix-blend-mode:screen;animation:scan 8s linear infinite;z-index:0}
+    ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#22324c;border-radius:99px}::-webkit-scrollbar-track{background:transparent}
+    .app{position:relative;z-index:1}
+    .glass{background:linear-gradient(145deg,rgba(11,17,32,.90),rgba(5,8,16,.92));backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}
+    .hud{position:relative;border:1px solid rgba(94,231,255,.20);box-shadow:inset 0 0 28px rgba(94,231,255,.035),0 0 28px rgba(94,231,255,.06)}
+    .hud:before,.hud:after{content:"";position:absolute;width:14px;height:14px;border-color:rgba(94,231,255,.85);pointer-events:none}
+    .hud:before{left:-1px;top:-1px;border-left:2px solid;border-top:2px solid}.hud:after{right:-1px;bottom:-1px;border-right:2px solid;border-bottom:2px solid}
+    .scan{overflow:hidden}.scan:after{content:"";position:absolute;left:0;right:0;top:-40%;height:40%;background:linear-gradient(180deg,transparent,rgba(94,231,255,.08),transparent);animation:scanCard 5.5s linear infinite;pointer-events:none}
+    .gridGlow{background-image:linear-gradient(rgba(94,231,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(94,231,255,.025) 1px,transparent 1px);background-size:16px 16px}
+    .btn{transition:transform .12s ease,box-shadow .2s ease,border-color .2s ease,background .2s ease}.btn:active{transform:scale(.96)}
+    .mission-done{opacity:.48;filter:saturate(.55)}
+    .xp-pop{animation:xpPop 1.25s cubic-bezier(.2,.8,.2,1) forwards}
+    .toast{animation:toastIn .22s ease-out}
+    .boot{animation:bootIn .35s ease-out}.boot.hide{animation:bootOut .38s ease-in forwards}
+    .rank-glow-E{box-shadow:0 0 24px rgba(94,231,255,.16)}
+    .rank-glow-D{box-shadow:0 0 24px rgba(91,140,255,.18)}
+    .rank-glow-C{box-shadow:0 0 24px rgba(167,123,255,.18)}
+    .rank-glow-B{box-shadow:0 0 28px rgba(57,230,165,.18)}
+    .rank-glow-A{box-shadow:0 0 30px rgba(255,215,106,.20)}
+    .rank-glow-S{box-shadow:0 0 38px rgba(255,215,106,.38)}
+    .rank-glow-Nacional{box-shadow:0 0 48px rgba(255,103,199,.42)}
+    .progress-shine{position:relative;overflow:hidden}.progress-shine:after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.24) 50%,transparent 70%);transform:translateX(-120%);animation:shine 3.2s ease-in-out infinite}
+    .pulse-soft{animation:pulseSoft 2.8s ease-in-out infinite}
+    .float{animation:float 4s ease-in-out infinite}
+    .particle{position:fixed;width:2px;height:2px;border-radius:50%;background:rgba(94,231,255,.65);pointer-events:none;opacity:.35;z-index:0}
+    .modal{background:rgba(2,4,9,.82);backdrop-filter:blur(12px)}
+    .rankS{color:#ffd76a;text-shadow:0 0 14px rgba(255,215,106,.55)}.rankN{color:#ff67c7;text-shadow:0 0 16px rgba(255,103,199,.55)}
+    @keyframes scan{0%{transform:translateY(-100%)}100%{transform:translateY(100%)}}
+    @keyframes scanCard{0%{transform:translateY(-120%)}100%{transform:translateY(420%)}}
+    @keyframes shine{0%,55%{transform:translateX(-120%)}85%,100%{transform:translateX(120%)}}
+    @keyframes xpPop{0%{opacity:0;transform:translateY(10px) scale(.84)}15%{opacity:1;transform:translateY(0) scale(1.08)}100%{opacity:0;transform:translateY(-64px) scale(1.02)}}
+    @keyframes toastIn{from{opacity:0;transform:translateY(-10px) scale(.98)}to{opacity:1;transform:none}}
+    @keyframes bootIn{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+    @keyframes bootOut{to{opacity:0;transform:scale(1.02);visibility:hidden}}
+    @keyframes pulseSoft{0%,100%{opacity:.65}50%{opacity:1}}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+
+    .avatarFrame{position:relative;width:92px;height:112px;border-radius:18px;overflow:hidden;border:1px solid rgba(94,231,255,.32);background:#050810;box-shadow:0 0 30px rgba(94,231,255,.10)}
+    .avatarFrame:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(94,231,255,.04),transparent 45%,rgba(2,4,9,.22));pointer-events:none}
+    .avatarImg{width:100%;height:100%;object-fit:cover;object-position:center 35%;display:block;filter:saturate(1.08) contrast(1.05)}
+    .avatarLevel{position:absolute;left:7px;bottom:6px;z-index:2;padding:3px 6px;border-radius:7px;background:rgba(2,4,9,.78);border:1px solid rgba(255,255,255,.14);font:700 8px/1 JetBrains Mono,monospace;color:#e9f8ff;letter-spacing:.08em}
+    .music-badge{position:absolute;right:8px;bottom:8px;z-index:4;min-width:24px;height:24px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:rgba(2,4,9,.82);border:1px solid rgba(94,231,255,.18);font-size:9px;color:#bff7ff}
+    .avatarAura{position:absolute;inset:-35%;background:radial-gradient(circle,rgba(94,231,255,.10),transparent 58%);pointer-events:none;opacity:.9}
+    .weekend-card{border-color:rgba(167,123,255,.18)!important}
+
+  </style>
+</head>
+<body class="dark">
+  <div id="particles"></div>
+  <div id="boot" class="boot fixed inset-0 z-[100] flex items-center justify-center bg-[#03050b] p-6">
+    <div class="w-full max-w-sm space-y-5 text-center">
+      <div class="mx-auto w-20 h-20 rounded-3xl border border-cyan-300/35 bg-cyan-300/5 flex items-center justify-center shadow-glowStrong float">
+        <i class="fa-solid fa-crosshairs text-3xl text-cyan-200"></i>
+      </div>
+      <div class="font-display uppercase tracking-[.45em] text-cyan-200 text-2xl font-bold">SYSTEM</div>
+      <div class="text-[11px] font-mono text-slate-500" id="bootText">Inicializando interfaz...</div>
+      <div class="h-1 rounded-full bg-slate-900 overflow-hidden border border-slate-800"><div id="bootBar" class="h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500" style="width:15%"></div></div>
+      <button id="startButton" class="btn hidden w-full py-3 rounded-xl border border-cyan-400/40 bg-cyan-400/10 text-cyan-200 text-xs font-black tracking-wider hover:bg-cyan-400/15">ENTRAR AL SISTEMA</button>
+      <p class="text-[9px] text-slate-700 font-mono">Música local original • puedes añadir tus propios archivos de audio</p>
+    </div>
+  </div>
+
+  <div class="app min-h-screen pb-28">
+    <header class="sticky top-0 z-50 glass border-b border-slate-800/90">
+      <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-11 h-11 shrink-0 rounded-2xl bg-gradient-to-br from-cyan-300 via-blue-500 to-purple-600 text-slate-950 flex items-center justify-center shadow-glow"><i class="fa-solid fa-crosshairs text-lg"></i></div>
+          <div class="min-w-0"><div class="font-display font-bold tracking-[.15em] text-sm">SYSTEM XP <span class="text-[8px] font-mono tracking-normal px-1.5 py-0.5 rounded-full border border-cyan-400/30 bg-cyan-400/10 text-cyan-200">V4</span></div><div id="dateLabel" class="text-[9px] text-slate-500 font-mono truncate">CARGANDO...</div></div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="soundBtn" class="btn w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:text-cyan-200"><i id="soundIcon" class="fa-solid fa-volume-xmark text-xs"></i></button><button id="musicBtn" title="Cambiar música" class="btn w-9 h-9 rounded-xl bg-slate-950 border border-slate-800 text-slate-400 hover:text-cyan-200"><i id="musicIcon" class="fa-solid fa-music text-xs"></i></button>
+          <button id="dayBtn" class="btn text-[9px] font-mono px-2.5 py-2 rounded-xl bg-slate-950 border border-slate-800 text-slate-300"><i class="fa-regular fa-calendar-check text-cyan-300 mr-1"></i><span id="dayLabel">HOY</span></button>
+        </div>
+      </div>
+      <div id="dayMenu" class="hidden absolute right-4 top-16 z-50 w-48 rounded-2xl bg-slate-950/95 border border-slate-800 shadow-2xl p-2">
+        <div class="px-2 pb-2 text-[9px] uppercase tracking-wider font-mono text-slate-600">Modo de prueba</div>
+        <div id="dayOptions" class="space-y-1"></div>
+      </div>
+    </header>
+
+    <main class="max-w-md mx-auto px-4 pt-4 space-y-4">
+      <div id="toastBox" class="fixed top-20 left-1/2 -translate-x-1/2 z-[80] pointer-events-none w-max max-w-[92vw]"></div>
+      <div id="xpBox" class="fixed top-28 left-1/2 -translate-x-1/2 z-[79] pointer-events-none"></div>
+
+      <section id="view-home" class="space-y-4">
+        <div id="playerPanel" class="hud scan rounded-[1.5rem] card p-4 overflow-hidden">
+          <div class="gridGlow absolute inset-0 opacity-20 pointer-events-none"></div>
+          <div class="absolute -right-10 -top-12 w-40 h-40 rounded-full bg-cyan-500/5 blur-3xl pointer-events-none"></div>
+          <div class="relative">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="avatarFrame shadow-glow">
+                  <div id="avatarAura" class="avatarAura"></div>
+                  <img id="avatarImg" class="avatarImg" src="avatars/avatar_1.png" alt="Avatar del jugador">
+                  <span id="avatarLevelTag" class="avatarLevel">NIVEL 1</span>
+                  <span id="rankMini" class="absolute -top-1 -right-1 z-10 px-2 py-1 rounded-md bg-cyan-300 text-slate-950 text-[8px] font-black font-mono border border-white/30">E</span>
+                  <span id="musicBadge" class="music-badge"><i class="fa-solid fa-music"></i></span>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2"><h2 id="name" class="font-display text-xl font-bold truncate">Jugador</h2><span id="rankChip" class="text-[8px] font-mono px-2 py-1 rounded-full border border-slate-700 bg-slate-900 text-slate-300">RANGO E</span></div>
+                  <div class="flex items-center gap-2 mt-1.5"><span id="level" class="font-mono font-black text-cyan-200">NIVEL 2</span><span class="text-slate-700">•</span><span id="totalXp" class="text-[10px] font-mono text-slate-300">180 XP</span></div>
+                  <div id="rankTitle" class="text-[9px] text-slate-600 mt-1 font-mono">ASPIRANTE</div>
+                </div>
+              </div>
+              <div class="text-right">
+                <div class="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-amber-400/10 border border-amber-400/20 text-amber-300"><i class="fa-solid fa-fire text-[11px] pulse-soft"></i><span id="streak" class="font-mono font-black text-sm">0</span><span class="text-[8px] font-mono">DÍAS</span></div>
+                <div class="text-[7px] text-slate-700 mt-1 uppercase font-mono">Racha</div>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <div class="flex items-end justify-between font-mono text-[9px]"><span class="text-slate-500">PROGRESO AL SIGUIENTE NIVEL</span><span id="progressText" class="text-cyan-200">80 / 200 XP</span></div>
+              <div class="progress-shine h-3 rounded-full bg-slate-950 border border-slate-800 p-[2px] mt-1.5"><div id="progressBar" class="h-full rounded-full bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500" style="width:40%"></div></div>
+              <div class="grid grid-cols-3 text-[8px] font-mono text-slate-600 mt-1"><span id="levelMin">100 XP</span><span id="toNext" class="text-center">FALTAN 120 XP</span><span id="levelNext" class="text-right">300 XP</span></div>
+            </div>
+
+            <div class="grid grid-cols-3 gap-2 mt-4">
+              <div class="rounded-xl bg-slate-950/70 border border-slate-800 p-2.5"><div class="text-[8px] uppercase text-slate-600 font-mono">XP Hoy</div><div id="xpToday" class="text-base font-black text-emerald-300 font-mono">0</div></div>
+              <div class="rounded-xl bg-slate-950/70 border border-slate-800 p-2.5"><div class="text-[8px] uppercase text-slate-600 font-mono">Semana</div><div id="xpWeek" class="text-base font-black text-cyan-200 font-mono">0</div></div>
+              <div class="rounded-xl bg-slate-950/70 border border-slate-800 p-2.5"><div class="text-[8px] uppercase text-slate-600 font-mono">Completadas</div><div id="totalMissions" class="text-base font-black text-purple-300 font-mono">0</div></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between rounded-xl bg-slate-950/90 border border-slate-800 px-3 py-2.5">
+          <div class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-cyan-300 animate-pulse"></span><div><div id="routineTitle" class="text-[9px] font-black tracking-wider text-slate-200">MISIONES DE HOY</div><div id="routineSubtitle" class="text-[8px] text-slate-600 font-mono">Lunes a viernes • ESFM</div></div></div>
+          <span id="routineDay" class="text-[8px] font-mono text-slate-500">HOY</span>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex items-center justify-between"><h3 class="font-display text-sm font-bold tracking-wider text-slate-200"><i class="fa-solid fa-list-check text-cyan-300 mr-1"></i> MISIÓN DIARIA</h3><span id="countBadge" class="text-[8px] font-mono text-slate-600">0/0</span></div>
+          <div id="todayMissions" class="space-y-2"></div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+          <button id="manualBtn" class="btn py-3 rounded-xl border border-cyan-400/20 bg-cyan-400/5 text-cyan-200 text-[9px] font-black font-mono hover:bg-cyan-400/10"><i class="fa-solid fa-plus-circle mr-1"></i> MISIÓN MANUAL</button>
+          <button id="systemStatusBtn" class="btn py-3 rounded-xl border border-purple-400/15 bg-purple-400/5 text-purple-200 text-[9px] font-black font-mono"><i class="fa-solid fa-signal mr-1"></i> ESTADO DEL SISTEMA</button>
+        </div>
+
+        <div class="rounded-2xl bg-slate-950/80 border border-slate-800 p-3.5">
+          <div class="flex items-center justify-between"><span class="text-[9px] uppercase tracking-wider font-mono text-slate-600">PRINCIPIO DEL SISTEMA</span><span class="text-[8px] font-mono text-cyan-300">♾️</span></div>
+          <p class="text-[10px] text-slate-400 leading-relaxed mt-2">No se trata de hacerlo todo. Se trata de acumular progreso constante. El XP ganado es permanente y el nivel no tiene límite.</p>
+        </div>
+      </section>
+
+      <section id="view-missions" class="hidden space-y-4">
+        <div><div class="font-display text-xl font-bold tracking-wider"><i class="fa-solid fa-crosshairs text-cyan-300 mr-2"></i>BANCO DE MISIONES</div><p class="text-[9px] text-slate-600 mt-1 font-mono">Rutinas configuradas • lunes a domingo</p></div>
+        <div id="allMissions" class="space-y-2"></div>
+      </section>
+
+      <section id="view-attrs" class="hidden space-y-4">
+        <div><div class="font-display text-xl font-bold tracking-wider"><i class="fa-solid fa-chart-simple text-cyan-300 mr-2"></i>ATRIBUTOS</div><p class="text-[9px] text-slate-600 mt-1 font-mono">Distribución de tu experiencia</p></div>
+        <div id="attrs" class="space-y-2"></div>
+      </section>
+
+      <section id="view-ach" class="hidden space-y-4">
+        <div><div class="font-display text-xl font-bold tracking-wider"><i class="fa-solid fa-trophy text-amber-300 mr-2"></i>LOGROS</div><p class="text-[9px] text-slate-600 mt-1 font-mono">Desbloqueos por progreso real</p></div>
+        <div id="achievements" class="space-y-2"></div>
+        <div><div class="font-display text-sm font-bold tracking-wider text-slate-300 mb-2">MISIONES ESPECIALES</div><div id="special" class="space-y-2"></div></div>
+        <div><div class="font-display text-sm font-bold tracking-wider text-slate-300 mb-2">BOSS FIGHTS — ESFM</div><div id="bosses" class="space-y-2"></div></div>
+      </section>
+
+      <section id="view-more" class="hidden space-y-4">
+        <div><div class="font-display text-xl font-bold tracking-wider"><i class="fa-solid fa-clock-rotate-left text-cyan-300 mr-2"></i>HISTORIAL</div><p class="text-[9px] text-slate-600 mt-1 font-mono">Registro permanente de experiencia</p></div>
+        <div id="history" class="space-y-2"></div>
+        <div><div class="font-display text-sm font-bold tracking-wider text-slate-300 mb-2">RECOMPENSAS</div><div id="rewards" class="space-y-2"></div></div>
+        <div><button id="resetBtn" class="btn w-full py-3 rounded-xl border border-red-400/15 bg-red-400/5 text-red-300 text-[9px] font-black font-mono"><i class="fa-solid fa-triangle-exclamation mr-1"></i> RESTABLECER PROGRESO</button></div>
+      </section>
+    </main>
+
+    <nav class="fixed bottom-0 left-0 right-0 z-50 glass border-t border-slate-800/90 px-2 py-2">
+      <div class="max-w-md mx-auto grid grid-cols-5 gap-1 text-[8px] font-mono">
+        <button class="nav btn py-1.5 text-cyan-200" data-view="home"><i class="fa-solid fa-house-chimney text-sm block mb-1"></i>INICIO</button>
+        <button class="nav btn py-1.5 text-slate-600" data-view="missions"><i class="fa-solid fa-crosshairs text-sm block mb-1"></i>MISIONES</button>
+        <button class="nav btn py-1.5 text-slate-600" data-view="attrs"><i class="fa-solid fa-chart-pie text-sm block mb-1"></i>ATRIBUTOS</button>
+        <button class="nav btn py-1.5 text-slate-600" data-view="ach"><i class="fa-solid fa-trophy text-sm block mb-1"></i>LOGROS</button>
+        <button class="nav btn py-1.5 text-slate-600" data-view="more"><i class="fa-solid fa-bars-staggered text-sm block mb-1"></i>MÁS</button>
+      </div>
+    </nav>
+  </div>
+
+  <div id="modal" class="modal hidden fixed inset-0 z-[90] items-center justify-center p-4">
+    <div class="w-full max-w-sm rounded-3xl bg-slate-950 border border-cyan-300/20 p-4 shadow-2xl hud">
+      <div class="flex items-center justify-between"><div class="font-display font-bold tracking-wider">REGISTRAR MISIÓN</div><button id="closeModal" class="btn w-9 h-9 rounded-xl bg-slate-900 text-slate-500"><i class="fa-solid fa-xmark"></i></button></div>
+      <form id="manualForm" class="space-y-3 mt-4">
+        <div><label class="block text-[8px] uppercase font-mono tracking-wider text-slate-600 mb-1">Nombre</label><input id="mName" class="w-full rounded-xl bg-slate-900 border border-slate-800 px-3 py-3 text-xs outline-none focus:border-cyan-400/50" required placeholder="Ej. Repaso de Matemáticas"></div>
+        <div class="grid grid-cols-2 gap-2"><div><label class="block text-[8px] uppercase font-mono tracking-wider text-slate-600 mb-1">Atributo</label><select id="mAttr" class="w-full rounded-xl bg-slate-900 border border-slate-800 px-3 py-3 text-xs outline-none"><option>Conocimiento</option><option>Tecnología</option><option>Físico</option><option>Combate</option><option>Baile</option><option>Oratoria</option><option>Social</option><option>Apariencia</option></select></div><div><label class="block text-[8px] uppercase font-mono tracking-wider text-slate-600 mb-1">XP</label><input id="mXp" type="number" min="1" max="5000" value="30" class="w-full rounded-xl bg-slate-900 border border-slate-800 px-3 py-3 text-xs outline-none"></div></div>
+        <div><label class="block text-[8px] uppercase font-mono tracking-wider text-slate-600 mb-1">Nota</label><input id="mNote" class="w-full rounded-xl bg-slate-900 border border-slate-800 px-3 py-3 text-xs outline-none" placeholder="Opcional"></div>
+        <div class="grid grid-cols-2 gap-2"><button type="button" id="cancelManual" class="btn py-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 text-[9px] font-black">CANCELAR</button><button type="submit" class="btn py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 text-[9px] font-black">COMPLETAR</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div id="statusModal" class="modal hidden fixed inset-0 z-[90] items-center justify-center p-4">
+    <div class="w-full max-w-sm rounded-3xl bg-slate-950 border border-purple-400/20 p-5 shadow-2xl hud">
+      <div class="flex items-center justify-between"><div class="font-display font-bold tracking-wider">ESTADO DEL SISTEMA</div><button id="closeStatus" class="btn w-9 h-9 rounded-xl bg-slate-900 text-slate-500"><i class="fa-solid fa-xmark"></i></button></div>
+      <div class="mt-4 space-y-2 font-mono text-[9px]"><div class="flex justify-between bg-slate-900/80 rounded-xl p-3"><span class="text-slate-600">MODO</span><span class="text-cyan-200">LOCAL</span></div><div class="flex justify-between bg-slate-900/80 rounded-xl p-3"><span class="text-slate-600">ALMACENAMIENTO</span><span class="text-emerald-300">LOCALSTORAGE</span></div><div class="flex justify-between bg-slate-900/80 rounded-xl p-3"><span class="text-slate-600">NIVEL</span><span id="statusLevel" class="text-white">2</span></div><div class="flex justify-between bg-slate-900/80 rounded-xl p-3"><span class="text-slate-600">RANGO</span><span id="statusRank" class="text-white">E</span></div><div class="flex justify-between bg-slate-900/80 rounded-xl p-3"><span class="text-slate-600">MISIÓN</span><span class="text-emerald-300">OPERATIVA</span></div></div>
+      <div class="mt-4 space-y-2"><div class="p-3 rounded-xl border border-cyan-400/10 bg-cyan-400/5 text-[9px] text-slate-500 leading-relaxed">Música: SYSTEM / BOSS. Los efectos se pueden activar por separado.</div><div class="p-3 rounded-xl border border-cyan-400/10 bg-cyan-400/5 text-[9px] text-slate-500 leading-relaxed">Google Sheets conectado: lectura y guardado de XP mediante Google Apps Script.</div></div>
+    </div>
+  </div>
+
+
+  <audio id="bgMusic" loop preload="auto">
+    <source id="bgMusicSource" src="audio/dark_aria.mp3" type="audio/mpeg">
+  </audio>
+  <audio id="fxMission" preload="auto" src="audio/mission_complete.wav"></audio>
+  <audio id="fxLevel" preload="auto" src="audio/level_up.wav"></audio>
+  <audio id="fxRank" preload="auto" src="audio/rank_up.wav"></audio>
+
+<script>
+const KEY='SYSTEM_XP_V4_DATA'; const LEGACY_KEY='SYSTEM_XP_V3_DATA';
+const API_URL='https://script.google.com/macros/s/AKfycbyyw9-EbdduMgqZetdY8md0t7WdBTL4h6VJmCpYUEm2nLCqVcC7oPiAYnlVMm_tGmHZ/exec';
+const ATTRS=['Conocimiento','Tecnología','Físico','Combate','Baile','Oratoria','Social','Apariencia'];
+const RANKS=[
+  {name:'E',min:1,max:24,title:'Cazador E-Rango'},
+  {name:'D',min:25,max:49,title:'Cazador D-Rango'},
+  {name:'C',min:50,max:74,title:'Cazador C-Rango'},
+  {name:'B',min:75,max:99,title:'Cazador B-Rango'},
+  {name:'A',min:100,max:149,title:'Cazador A-Rango'},
+  {name:'S',min:150,max:199,title:'Cazador S-Rango'},
+  {name:'Nacional',min:200,max:Infinity,title:'Cazador de Nivel Nacional'}
+];
+const AVATARS=[
+  {min:251,key:'infinity',title:'Monarca',caption:'Más allá de los rangos.'},
+  {min:200,key:'200',title:'Soberano de Sombras',caption:'No solo cazo sombras... las gobierno.'},
+  {min:150,key:'150',title:'Cazador S-Rango',caption:'Un paso por encima del mundo.'},
+  {min:100,key:'100',title:'Cazador A-Rango',caption:'Ahora ellos me siguen.'},
+  {min:75,key:'75',title:'Cazador B-Rango',caption:'Controlo mi propio destino.'},
+  {min:50,key:'50',title:'Cazador C-Rango',caption:'El límite ya no existe.'},
+  {min:25,key:'25',title:'Cazador D-Rango',caption:'Más fuerte, más enfocado.'},
+  {min:10,key:'10',title:'Cazador E-Rango',caption:'Empieza la verdadera lucha.'},
+  {min:5,key:'5',title:'Despertar',caption:'Disciplina crea cambios.'},
+  {min:1,key:'1',title:'Humano Normal',caption:'El comienzo de todo.'}
+];
+const schedule={
+  LUNES:[
+    ['L1','Despertar a tiempo','Apariencia',10,'05:45','Levantarse a la hora prevista'],
+    ['L2','Salir puntual','Apariencia',10,'06:20','Salir hacia la ESFM a tiempo'],
+    ['L3','Clases ESFM','Conocimiento',30,'07:00','Asistencia y atención en clases'],
+    ['L4','Estudio / tareas ESFM','Conocimiento',40,'15:00','Bloque principal de estudio'],
+    ['L5','Python / programación','Tecnología',30,'16:00','Mantener activa Ingeniería de Sistemas'],
+    ['L6','Entrenamiento físico','Físico',40,'17:00','Rutina en casa'],
+    ['L7','Repaso ligero','Conocimiento',20,'19:00','Repasar lo aprendido'],
+    ['L8','Dormir a tiempo','Apariencia',20,'22:15','Cerrar el día y cuidar la recuperación']
+  ],
+  MARTES:[],MIERCOLES:[],JUEVES:[],VIERNES:[],SABADO:[],DOMINGO:[]
+};
+schedule.MARTES=[...schedule.LUNES.filter(x=>['L1','L2','L3','L4','L7','L8'].includes(x[0])).map(x=>[x[0].replace('L','M'),x[1],x[2],x[3],x[4],x[5]]),['M5','Artes marciales','Combate',40,'17:00','Técnicas, sombra o práctica controlada'],['M6','Oratoria','Oratoria',20,'19:00','Hablar, improvisar o explicar un tema']];
+schedule.MIERCOLES=[...schedule.LUNES.filter(x=>['L1','L2','L3','L4','L7','L8'].includes(x[0])).map(x=>[x[0].replace('L','W'),x[1],x[2],x[3],x[4],x[5]]),['W5','Python / programación','Tecnología',30,'16:00','Código y práctica'],['W6','Entrenamiento físico','Físico',40,'17:00','Rutina en casa']];
+schedule.JUEVES=[...schedule.LUNES.filter(x=>['L1','L2','L3','L4','L7','L8'].includes(x[0])).map(x=>[x[0].replace('L','J'),x[1],x[2],x[3],x[4],x[5]]),['J5','Baile','Baile',30,'17:00','Práctica técnica y coreografía'],['J6','Artes marciales','Combate',40,'18:00','Práctica técnica']];
+schedule.VIERNES=[...schedule.LUNES.filter(x=>['L1','L2','L3','L4','L7','L8'].includes(x[0])).map(x=>[x[0].replace('L','V'),x[1],x[2],x[3],x[4],x[5]]),['V5','Entrenamiento físico','Físico',40,'17:00','Rutina en casa'],['V6','Social / deporte','Social',20,'19:00','Convivencia, deporte o actividad social']];
+schedule.SABADO=[
+  ['SA1','Meditación & Mindset','Apariencia',15,'08:00','Activar el día con calma y enfoque'],
+  ['SA2','Persuasión / Lenguaje corporal','Oratoria',25,'08:15','Lectura y práctica de presencia'],
+  ['SA3','Mini-Coding → Python','Tecnología',40,'08:45','Lección corta y ejercicios'],
+  ['SA4','Desayuno + vocabulario en inglés','Social',20,'09:30','Repaso de vocabulario'],
+  ['SA5','Entreno de artes marciales','Combate',50,'10:00','MMA / Muay Thai / técnica'],
+  ['SA6','Ducha + cuidado físico y belleza','Apariencia',30,'11:00','Cuidado personal'],
+  ['SA7','Estudio ESFM / simulacro + corrección','Conocimiento',80,'11:30','Bloque académico fuerte'],
+  ['SA8','Práctica de ajedrez + análisis','Conocimiento',20,'14:00','Partida y análisis'],
+  ['SA9','Almuerzo + descanso mental','Apariencia',15,'15:00','Descanso sin exceso de pantalla'],
+  ['SA10','Curso de Python / ejercicios','Tecnología',60,'16:00','Progreso semanal en programación'],
+  ['SA11','Fútbol / futsal','Social',25,'17:15','Deporte colectivo'],
+  ['SA12','Baile / práctica individual','Baile',30,'18:00','Técnica y coreografía'],
+  ['SA13','Entrenamiento físico principal','Físico',60,'19:00','Sesión principal de fuerza'],
+  ['SA14','Cena + conversación social','Social',40,'20:00','Practicar conversación'],
+  ['SA15','Revisión diaria de XP + plan','Apariencia',15,'21:00','Cerrar el día y preparar mañana'],
+  ['SA16','Lectura / podcast de liderazgo y oratoria','Oratoria',20,'21:15','Desarrollo de comunicación'],
+  ['SA17','Tiempo libre controlado','Social',30,'21:30','Recompensa y ocio consciente'],
+  ['SA18','Preparación para dormir','Apariencia',10,'22:15','Desconexión y recuperación']
+];
+schedule.DOMINGO=[
+  ['DO1','Meditación & Mindset','Apariencia',15,'08:00','Reset mental'],
+  ['DO2','Repaso de vocabulario en inglés','Social',20,'08:20','Mantener el idioma activo'],
+  ['DO3','Repaso ESFM','Conocimiento',40,'09:00','Consolidar lo aprendido'],
+  ['DO4','Python / Sistemas','Tecnología',40,'10:00','Mantener Ingeniería de Sistemas activa'],
+  ['DO5','Ajedrez','Conocimiento',20,'11:00','Partida y análisis'],
+  ['DO6','Almuerzo + descanso mental','Apariencia',15,'12:00','Recuperación'],
+  ['DO7','Baile','Baile',30,'15:00','Práctica individual'],
+  ['DO8','Movilidad / entrenamiento ligero','Físico',30,'16:00','Recuperación activa'],
+  ['DO9','Social / salida / deporte','Social',40,'17:00','Vida social y movimiento'],
+  ['DO10','Oratoria / liderazgo','Oratoria',20,'19:00','Práctica breve'],
+  ['DO11','Planificación semanal + revisión XP','Apariencia',15,'20:00','Preparar la nueva semana'],
+  ['DO12','Lectura ligera','Conocimiento',20,'20:30','Cerrar la semana'],
+  ['DO13','Tiempo libre controlado','Social',30,'21:00','Ocio'],
+  ['DO14','Preparación para dormir','Apariencia',10,'22:00','Dormir a tiempo']
+];
+const defaultData={name:'Jugador',xp:180,records:[
+{id:'seed-1',date:'2026-09-12',time:'',mission:'fisico+baile',attr:'Físico',xp:90,note:'Registro inicial'},
+{id:'seed-2',date:'2026-09-13',time:'',mission:'ajedrez+ingles',attr:'Conocimiento',xp:40,note:'Registro inicial'},
+{id:'seed-3',date:'2026-09-13',time:'',mission:'MMA',attr:'Combate',xp:50,note:'Registro inicial'}],
+streak:1,lastActive:'2026-09-13',simDay:'AUTO',sound:false,music:true,musicTheme:'system',gsSync:false};
+let data=load();
+let audioCtx=null;
+function load(){try{const raw=localStorage.getItem(KEY)||localStorage.getItem(LEGACY_KEY);if(raw){const saved=JSON.parse(raw);return Object.assign({},structuredClone(defaultData),saved)}}catch(e){}return structuredClone(defaultData)}
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+async function loadPlayer(){
+  try{
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),8000);
+    const res=await fetch(API_URL,{method:'GET',cache:'no-store',signal:controller.signal});
+    clearTimeout(timer);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const player=await res.json();
+    if(player && typeof player==='object'){
+      if(player.nombre!==undefined && String(player.nombre).trim()) data.name=String(player.nombre);
+      if(player.xp!==undefined && Number.isFinite(Number(player.xp))) data.xp=Number(player.xp);
+      if(player.racha!==undefined && Number.isFinite(Number(player.racha))) data.streak=Number(player.racha);
+      data.gsSync=true;
+      save();
+      renderAll();
+      console.log('[SYSTEM XP] Google Sheets sincronizado:',player);
+      return true;
+    }
+  }catch(e){
+    data.gsSync=false;
+    console.warn('[SYSTEM XP] Google Sheets no disponible; usando datos locales.',e);
+  }
+  return false;
+}
+async function savePlayer(record=null){
+  try{
+    const payload={
+      nombre:data.name,
+      xp:data.xp,
+      racha:data.streak,
+      record:record||null
+    };
+    const res=await fetch(API_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    data.gsSync=true;
+    save();
+    console.log('[SYSTEM XP] Datos guardados en Google Sheets',record||'PLAYER');
+    return true;
+  }catch(err){
+    data.gsSync=false;
+    console.error('[SYSTEM XP] Error guardando en Google Sheets',err);
+    return false;
+  }
+}
+function dateISO(d=new Date()){const x=new Date(d.getTime()-d.getTimezoneOffset()*60000);return x.toISOString().slice(0,10)}
+function dayName(){if(data.simDay!=='AUTO')return data.simDay;return ['DOMINGO','LUNES','MARTES','MIERCOLES','JUEVES','VIERNES','SABADO'][new Date().getDay()]}
+function niceDate(){return new Date().toLocaleDateString('es-BO',{weekday:'long',day:'numeric',month:'long'})}
+function levelInfo(xp){const level=Math.max(1,Math.floor((1+Math.sqrt(1+8*xp/100))/2));const min=100*level*(level-1)/2;const next=100*(level+1)*level/2;return{level,min,next,progress:xp-min,needed:Math.max(0,next-xp),pct:Math.min(100,Math.max(0,(xp-min)/(next-min)*100))}}
+function rankInfo(level){return RANKS.find(r=>level>=r.min&&level<=r.max)||RANKS[0]}
+function avatarInfo(level){return AVATARS.find(a=>level>=a.min)||AVATARS[AVATARS.length-1]}
+function recordsForDay(iso){return data.records.filter(r=>r.date===iso)}
+function currentDayRecords(){return recordsForDay(dateISO())}
+function weekStartISO(){const d=new Date();const day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return dateISO(d)}
+function xpWeek(){const s=weekStartISO();return data.records.filter(r=>r.date>=s).reduce((a,b)=>a+b.xp,0)}
+function totalByAttr(attr){return data.records.filter(r=>r.attr===attr).reduce((a,b)=>a+b.xp,0)}
+function refreshStreak(){const days=[...new Set(data.records.map(r=>r.date))].sort();if(!days.length){data.streak=0;return}const set=new Set(days);let cursor=new Date();cursor.setHours(0,0,0,0);let iso=dateISO(cursor);let st=0;while(set.has(iso)){st++;cursor.setDate(cursor.getDate()-1);iso=dateISO(cursor)}data.streak=st;data.lastActive=days[days.length-1]}
+function missionForDay(){return(schedule[dayName()]||[]).map(x=>({id:x[0],name:x[1],attr:x[2],xp:x[3],time:x[4],desc:x[5]}))}
+function allScheduled(){return Object.entries(schedule).flatMap(([day,list])=>list.map(x=>({id:x[0],day,name:x[1],attr:x[2],xp:x[3],time:x[4],desc:x[5]})))}
+function doneToday(id){return currentDayRecords().some(r=>r.missionId===id)}
+function safe(s){return String(s??'').replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function tone(freq,duration=.12,type='sine',gain=.03,when=0){if(!audioCtx||!data.sound)return;try{const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;g.gain.setValueAtTime(0,audioCtx.currentTime+when);g.gain.linearRampToValueAtTime(gain,audioCtx.currentTime+when+.01);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+when+duration);o.connect(g).connect(audioCtx.destination);o.start(audioCtx.currentTime+when);o.stop(audioCtx.currentTime+when+duration+.03)}catch(e){}}
+function soundClick(){tone(420,.07,'square',.018)}
+function soundComplete(){playFx('fxMission');tone(640,.08,'triangle',.02)}
+function soundLevelUp(){playFx('fxLevel');tone(1040,.18,'sine',.02,.12)}
+function soundRankUp(){playFx('fxRank')}
+function soundBoot(){tone(180,.16,'sawtooth',.025);tone(260,.18,'sawtooth',.022,.1);tone(520,.24,'triangle',.025,.22)}
+function ensureAudio(){if(!audioCtx){const AC=window.AudioContext||window.webkitAudioContext;if(AC)audioCtx=new AC()}if(audioCtx?.state==='suspended')audioCtx.resume()}
+function playFx(id){if(!data.sound)return;const a=document.getElementById(id);if(!a)return;try{a.currentTime=0; a.play().catch(()=>{});}catch(e){}}
+function musicSrc(){return data.musicTheme==='boss'?'audio/boss_theme.wav':'audio/dark_aria.mp3'}
+function applyMusic(){const a=document.getElementById('bgMusic');if(!a)return;a.src=musicSrc();a.loop=true;if(data.music){ensureAudio();a.play().catch(()=>{});}else{a.pause();a.currentTime=0;}updateMusicUI()}
+function setMusicTheme(theme,restart=false){data.musicTheme=theme;save();if(restart)applyMusic();else updateMusicUI()}
+function toggleMusic(){ensureAudio();if(!data.music){data.music=true;data.musicTheme='system';applyMusic();toast('🎵 Música SYSTEM activada');return;}if(data.musicTheme==='system'){data.musicTheme='boss';applyMusic();toast('⚔️ Música BOSS activada');return;}data.music=false;applyMusic();toast('🔇 Música desactivada')}
+function updateMusicUI(){const icon=document.getElementById('musicIcon'),badge=document.getElementById('musicBadge');if(!icon)return;if(!data.music){icon.className='fa-solid fa-music text-slate-500';if(badge)badge.innerHTML='<i class="fa-solid fa-volume-xmark"></i>';return;}icon.className=data.musicTheme==='boss'?'fa-solid fa-bolt text-purple-300':'fa-solid fa-music text-cyan-300';if(badge)badge.innerHTML=data.musicTheme==='boss'?'<i class="fa-solid fa-bolt"></i>':'<i class="fa-solid fa-music"></i>'}
+function toast(msg,type='ok'){const box=document.getElementById('toastBox');const el=document.createElement('div');el.className='toast mb-2 px-4 py-2.5 rounded-2xl border text-[10px] font-mono font-bold shadow-2xl '+(type==='warn'?'bg-amber-950/90 text-amber-200 border-amber-700/60':'bg-cyan-950/90 text-cyan-100 border-cyan-700/60');el.textContent=msg;box.appendChild(el);setTimeout(()=>el.remove(),2400)}
+function xpPop(txt){const box=document.getElementById('xpBox');const el=document.createElement('div');el.className='xp-pop font-display text-3xl font-black text-cyan-200 drop-shadow-[0_0_14px_rgba(94,231,255,.55)]';el.textContent=txt;box.appendChild(el);setTimeout(()=>el.remove(),1300)}
+function maybeLevelUp(beforeXp,afterXp){const a=levelInfo(beforeXp),b=levelInfo(afterXp);const ra=rankInfo(a.level),rb=rankInfo(b.level);if(b.level>a.level){soundLevelUp();toast(`⬆️ NIVEL ${b.level} DESBLOQUEADO`)}if(rb.name!==ra.name){soundRankUp();toast(`👑 RANGO ${rb.name} DESBLOQUEADO`,'ok')}return b.level>a.level}
+function completeMission(m){ensureAudio();soundClick();if(doneToday(m.id)){toast('⚠️ Misión ya completada hoy','warn');return}const before=data.xp;const beforeLevel=levelInfo(before).level;const beforeRank=rankInfo(beforeLevel).name;const rec={id:'R_'+Date.now(),missionId:m.id,date:dateISO(),time:new Date().toLocaleTimeString('es-BO',{hour:'2-digit',minute:'2-digit'}),mission:m.name,attr:m.attr,xp:m.xp,note:'',type:'Misión'};data.records.unshift(rec);data.xp+=m.xp;refreshStreak();save();renderAll();void savePlayer(rec);xpPop('+'+m.xp+' XP');soundComplete();toast(`✅ ${m.name} completada`);maybeLevelUp(before,data.xp)}
+function manualMission(e){e.preventDefault();ensureAudio();const name=document.getElementById('mName').value.trim();const attr=document.getElementById('mAttr').value;const xp=Number(document.getElementById('mXp').value);const note=document.getElementById('mNote').value.trim();if(!name||xp<=0)return;const before=data.xp;const rec={id:'R_'+Date.now(),missionId:'MANUAL_'+Date.now(),date:dateISO(),time:new Date().toLocaleTimeString('es-BO',{hour:'2-digit',minute:'2-digit'}),mission:name,attr,xp,note,type:'Manual'};data.records.unshift(rec);data.xp+=xp;refreshStreak();save();renderAll();void savePlayer(rec);closeManual();document.getElementById('manualForm').reset();document.getElementById('mXp').value=30;xpPop('+'+xp+' XP');soundComplete();toast(`✅ +${xp} XP registrado`);maybeLevelUp(before,data.xp)}
+function renderHome(){
+  const info=levelInfo(data.xp), rank=rankInfo(info.level), avatar=avatarInfo(info.level);
+  const rankClass='rank-glow-'+rank.name, panel=document.getElementById('playerPanel');
+  panel.className='hud scan rounded-[1.5rem] card p-4 overflow-hidden '+rankClass;
+  document.getElementById('name').textContent=data.name;
+  document.getElementById('level').textContent='NIVEL '+info.level.toLocaleString('es-BO');
+  document.getElementById('totalXp').textContent=data.xp.toLocaleString('es-BO')+' XP';
+  document.getElementById('rankMini').textContent=rank.name;
+  document.getElementById('rankChip').textContent='RANGO '+rank.name.toUpperCase();
+  document.getElementById('rankTitle').textContent=avatar.title.toUpperCase()+' • '+rank.title.toUpperCase();
+  document.getElementById('streak').textContent=data.streak;
+  document.getElementById('progressText').textContent=`${info.progress.toLocaleString('es-BO')} / ${(info.next-info.min).toLocaleString('es-BO')} XP`;
+  document.getElementById('progressBar').style.width=info.pct+'%';
+  document.getElementById('levelMin').textContent=info.min.toLocaleString('es-BO')+' XP';
+  document.getElementById('toNext').textContent='FALTAN '+info.needed.toLocaleString('es-BO')+' XP';
+  document.getElementById('levelNext').textContent=info.next.toLocaleString('es-BO')+' XP';
+  document.getElementById('xpToday').textContent=currentDayRecords().reduce((a,b)=>a+b.xp,0).toLocaleString('es-BO');
+  document.getElementById('xpWeek').textContent=xpWeek().toLocaleString('es-BO');
+  document.getElementById('totalMissions').textContent=data.records.length.toLocaleString('es-BO');
+  document.getElementById('dateLabel').textContent=niceDate().toUpperCase();
+  document.getElementById('avatarImg').src='avatars/avatar_'+avatar.key+'.png';
+  document.getElementById('avatarImg').alt='Avatar '+avatar.title;
+  document.getElementById('avatarLevelTag').textContent='NIVEL '+(avatar.key==='infinity'?'∞':avatar.min);
+  const d=dayName(), weekend=d==='SABADO'||d==='DOMINGO';
+  document.getElementById('routineDay').textContent=d;
+  document.getElementById('routineTitle').textContent=weekend?(d==='SABADO'?'MODO DESARROLLO • SÁBADO':'MODO RECUPERACIÓN • DOMINGO'):'RUTINA '+d;
+  document.getElementById('routineSubtitle').textContent=weekend?'Tiempo libre + atributos secundarios':'Lunes a viernes • ESFM';
+  document.getElementById('dayLabel').textContent=data.simDay==='AUTO'?'HOY':d;
+  const missions=missionForDay();let done=0;
+  document.getElementById('todayMissions').innerHTML=missions.length?missions.map(m=>{
+    const c=doneToday(m.id);if(c)done++;
+    const cardClass=weekend?'weekend-card':'';
+    return `<div class="card border ${c?'border-emerald-900/50 mission-done':'border-slate-800'} ${cardClass} rounded-2xl p-3.5 flex items-center justify-between gap-3">
+      <div class="min-w-0">
+        <div class="text-[11px] font-bold ${c?'line-through text-slate-500':'text-slate-100'}">${safe(m.name)}</div>
+        <div class="text-[8px] text-slate-600 mt-1 font-mono">${safe(m.attr)} · ${m.time}</div>
+        <div class="text-[8px] text-slate-700 mt-1">${safe(m.desc)}</div>
+      </div>
+      ${c?'<span class="px-2.5 py-1.5 rounded-xl bg-emerald-950/60 border border-emerald-800/60 text-emerald-300 text-[8px] font-black">✓ COMPLETADA</span>':`<button class="btn shrink-0 px-3 py-2 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 text-[9px] font-black shadow-glow" data-mission='${encodeURIComponent(JSON.stringify(m))}'>+${m.xp} XP</button>`}
+    </div>`;
+  }).join(''):'<div class="p-4 rounded-2xl border border-dashed border-slate-800 text-center text-[9px] text-slate-600 font-mono">No hay misiones programadas para este día. Usa una misión manual o elige un modo de prueba.</div>';
+  document.getElementById('countBadge').textContent=`${done}/${missions.length}`;
+  document.querySelectorAll('[data-mission]').forEach(b=>b.onclick=()=>completeMission(JSON.parse(decodeURIComponent(b.dataset.mission))));
+}
+function renderMissions(){const html=allScheduled().map(m=>`<div class="rounded-2xl bg-slate-950/75 border border-slate-800 p-3.5 flex items-center justify-between gap-3"><div><div class="text-[10px] font-bold text-slate-200">${safe(m.name)}</div><div class="text-[8px] text-slate-600 font-mono mt-1">${m.day} · ${m.time} · ${safe(m.attr)}</div></div><span class="text-[8px] font-mono font-black text-cyan-200 bg-cyan-400/5 border border-cyan-400/10 px-2 py-1.5 rounded-xl">+${m.xp}</span></div>`).join('');document.getElementById('allMissions').innerHTML=html}
+function renderAttrs(){document.getElementById('attrs').innerHTML=ATTRS.map(a=>{const xp=totalByAttr(a),info=levelInfo(xp);return `<div class="rounded-2xl bg-slate-950/80 border border-slate-800 p-3.5"><div class="flex justify-between items-center"><div><div class="text-[10px] font-bold text-slate-200">${a}</div><div class="text-[8px] text-slate-600 font-mono mt-1">NIVEL ${info.level}</div></div><div class="text-sm font-black font-mono text-cyan-200">${xp.toLocaleString('es-BO')} XP</div></div><div class="h-2 bg-slate-900 rounded-full overflow-hidden mt-3"><div class="h-full rounded-full bg-gradient-to-r from-cyan-400 to-purple-500" style="width:${info.pct}%"></div></div></div>`}).join('')}
+const achievements=[['Primer paso','Completa tu primera misión',()=>data.records.length>=1,50],['Racha de fuego','Mantén una racha de 7 días',()=>data.streak>=7,100],['Centurión','Completa 100 misiones',()=>data.records.length>=100,200],['Tecnológico','Acumula 500 XP en Tecnología',()=>totalByAttr('Tecnología')>=500,300],['Cazador disciplinado','30 registros en Físico',()=>data.records.filter(r=>r.attr==='Físico').length>=30,300]];
+const special=[['Aprender una coreografía completa','ÉPICA',300],['Completar un proyecto en Python','RARA',300],['Mantener 100 días de disciplina','LEGENDARIA',2000],['Dar una exposición importante','RARA',150]];
+const bosses=[['Primer trimestre','Completar con éxito el primer trimestre de la ESFM',1000],['Segundo trimestre','Mantener el progreso académico',1500],['Tercer trimestre','Cerrar exitosamente el año académico',2000]];
+const rewards=[['Nivel 10','Pequeña recompensa personal'],['Nivel 25','Recompensa especial'],['Nivel 50','Recompensa grande'],['Nivel 100','Recompensa legendaria']];
+function renderAch(){document.getElementById('achievements').innerHTML=achievements.map(a=>{const ok=a[2]();return `<div class="rounded-2xl border ${ok?'border-amber-700/40 bg-amber-400/5':'border-slate-800 bg-slate-950/80'} p-3.5 flex items-center justify-between gap-3"><div><div class="text-[10px] font-bold ${ok?'text-amber-200':'text-slate-300'}">${safe(a[0])}</div><div class="text-[8px] text-slate-600 mt-1">${safe(a[1])}</div></div><span class="text-[8px] font-mono ${ok?'text-amber-300':'text-slate-700'}">${ok?'DESBLOQUEADO':'BLOQUEADO'} · +${a[3]} XP</span></div>`}).join('');document.getElementById('special').innerHTML=special.map(s=>`<div class="rounded-2xl bg-slate-950/80 border border-slate-800 p-3.5 flex justify-between gap-3"><div><div class="text-[10px] font-bold">${safe(s[0])}</div><div class="text-[8px] text-slate-600 mt-1">${s[1]}</div></div><span class="text-[8px] font-mono text-purple-300">+${s[2]} XP</span></div>`).join('');document.getElementById('bosses').innerHTML=bosses.map((b,i)=>`<div class="rounded-2xl bg-slate-950/80 border border-slate-800 p-3.5 flex justify-between gap-3"><div><div class="text-[10px] font-bold">⚔️ ${safe(b[0])}</div><div class="text-[8px] text-slate-600 mt-1">${safe(b[1])}</div></div><span class="text-[8px] font-mono text-red-300">+${b[2]} XP</span></div>`).join('')}
+function renderMore(){document.getElementById('history').innerHTML=data.records.length?data.records.map(r=>`<div class="rounded-2xl bg-slate-950/80 border border-slate-800 p-3.5 flex justify-between gap-3"><div><div class="text-[10px] font-bold text-slate-200">${safe(r.mission)}</div><div class="text-[8px] text-slate-600 font-mono mt-1">${r.date} ${r.time||''} · ${safe(r.attr)}</div>${r.note?`<div class="text-[8px] text-slate-700 mt-1">${safe(r.note)}</div>`:''}</div><span class="text-xs font-black font-mono text-emerald-300">+${r.xp}</span></div>`).join(''):'<div class="p-4 rounded-2xl border border-dashed border-slate-800 text-center text-[9px] text-slate-600">SIN REGISTROS</div>';const info=levelInfo(data.xp);document.getElementById('rewards').innerHTML=rewards.map(r=>{const lvl=Number(r[0].replace(/\D/g,''));const ok=info.level>=lvl;return `<div class="rounded-2xl ${ok?'bg-amber-400/5 border-amber-700/40':'bg-slate-950/80 border-slate-800'} border p-3.5 flex justify-between gap-3"><div class="text-[10px] font-bold">${r[0]}</div><div class="text-[8px] ${ok?'text-amber-200':'text-slate-700'}">${ok?'DESBLOQUEADA':'BLOQUEADA'} · ${safe(r[1])}</div></div>`}).join('');document.getElementById('statusLevel').textContent=info.level.toLocaleString('es-BO');document.getElementById('statusRank').textContent=rankInfo(info.level).name}
+function renderAll(){refreshStreak();renderHome();renderMissions();renderAttrs();renderAch();renderMore();updateMusicUI()}
+function switchView(view){document.querySelectorAll('[id^="view-"]').forEach(x=>x.classList.add('hidden'));document.getElementById('view-'+view).classList.remove('hidden');document.querySelectorAll('.nav').forEach(b=>{const active=b.dataset.view===view;b.classList.toggle('text-cyan-200',active);b.classList.toggle('text-slate-600',!active)});if(data.music)setMusicTheme(view==='ach'?'boss':'system',true);renderAll()}
+function openManual(){document.getElementById('modal').classList.remove('hidden');document.getElementById('modal').classList.add('flex');setTimeout(()=>document.getElementById('mName').focus(),50)}
+function closeManual(){document.getElementById('modal').classList.add('hidden');document.getElementById('modal').classList.remove('flex')}
+function openStatus(){document.getElementById('statusModal').classList.remove('hidden');document.getElementById('statusModal').classList.add('flex');renderMore()}
+function closeStatus(){document.getElementById('statusModal').classList.add('hidden');document.getElementById('statusModal').classList.remove('flex')}
+function resetData(){if(!confirm('Esto borrará tu progreso local y restaurará los 180 XP iniciales. ¿Continuar?'))return;localStorage.removeItem(KEY);location.reload()}
+function toggleSound(){ensureAudio();data.sound=!data.sound;save();document.getElementById('soundIcon').className=data.sound?'fa-solid fa-volume-high text-cyan-300':'fa-solid fa-volume-xmark text-slate-500';toast(data.sound?'🔊 Efectos activados':'🔇 Efectos desactivados');if(data.sound)soundClick();updateMusicUI()}
+function buildDayMenu(){const options=[['AUTO','Hoy real'],['LUNES','Lunes'],['MARTES','Martes'],['MIERCOLES','Miércoles'],['JUEVES','Jueves'],['VIERNES','Viernes'],['SABADO','Sábado'],['DOMINGO','Domingo']];document.getElementById('dayOptions').innerHTML=options.map(o=>`<button class="btn w-full text-left px-3 py-2 rounded-xl text-[9px] font-mono ${data.simDay===o[0]?'bg-cyan-400/10 text-cyan-200':'text-slate-400 hover:bg-slate-900'}" data-day="${o[0]}">${o[1]}</button>`).join('');document.querySelectorAll('#dayOptions button').forEach(b=>b.onclick=()=>{data.simDay=b.dataset.day;save();document.getElementById('dayMenu').classList.add('hidden');renderAll();soundClick()})}
+function seedParticles(){const box=document.getElementById('particles');for(let i=0;i<32;i++){const p=document.createElement('span');p.className='particle';p.style.left=(Math.random()*100)+'%';p.style.top=(Math.random()*100)+'%';p.style.opacity=(.15+Math.random()*.3).toFixed(2);p.style.transform=`scale(${.6+Math.random()*1.3})`;box.appendChild(p)}}
+function boot(){seedParticles();buildDayMenu();renderAll();void loadPlayer();document.getElementById('soundIcon').className=data.sound?'fa-solid fa-volume-high text-cyan-300':'fa-solid fa-volume-xmark text-slate-500';updateMusicUI();let p=15;const text=document.getElementById('bootText'),bar=document.getElementById('bootBar'),start=document.getElementById('startButton');const timer=setInterval(()=>{p+=17;bar.style.width=Math.min(p,100)+'%';text.textContent=p<45?'Cargando núcleo...':p<75?'Sincronizando atributos...':p<100?'Preparando misiones...':'Sistema listo.';if(p>=100){clearInterval(timer);start.classList.remove('hidden')}},220)}
+document.querySelectorAll('.nav').forEach(b=>b.addEventListener('click',()=>{ensureAudio();soundClick();switchView(b.dataset.view)}));
+document.getElementById('manualBtn').onclick=()=>{ensureAudio();soundClick();openManual()};document.getElementById('closeModal').onclick=closeManual;document.getElementById('cancelManual').onclick=closeManual;document.getElementById('manualForm').onsubmit=manualMission;document.getElementById('systemStatusBtn').onclick=openStatus;document.getElementById('closeStatus').onclick=closeStatus;document.getElementById('soundBtn').onclick=toggleSound;document.getElementById('musicBtn').onclick=()=>{ensureAudio();toggleMusic()};document.getElementById('resetBtn').onclick=resetData;document.getElementById('dayBtn').onclick=()=>document.getElementById('dayMenu').classList.toggle('hidden');document.getElementById('startButton').onclick=()=>{ensureAudio();if(data.sound)soundBoot();if(data.music)applyMusic();document.getElementById('boot').classList.add('hide')};window.addEventListener('click',e=>{if(!e.target.closest('#dayBtn')&&!e.target.closest('#dayMenu'))document.getElementById('dayMenu').classList.add('hidden')});boot();
+</script>
+</body>
+</html>

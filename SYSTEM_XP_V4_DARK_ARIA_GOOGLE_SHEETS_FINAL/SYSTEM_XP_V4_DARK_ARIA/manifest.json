@@ -1,0 +1,10 @@
+{
+  "name": "SYSTEM XP — V4",
+  "short_name": "SYSTEM XP — V4",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#050810",
+  "theme_color": "#050810",
+  "lang": "es",
+  "icons": []
+}
